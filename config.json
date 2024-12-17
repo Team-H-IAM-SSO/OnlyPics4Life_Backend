@@ -1,0 +1,13 @@
+{
+    "SQL": {
+        "host": "",
+        "database": "",
+        "port": 5432,
+        "username": "",
+        "password": ""
+    },
+    "LDAP": {
+        "host": ""
+    },
+    "appPort": 6969
+}

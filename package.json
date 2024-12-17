@@ -1,0 +1,14 @@
+{
+  "name": "onlypics4life_backend",
+  "module": "main.js",
+  "version": "0.1.0",
+  "author": "TeamH",
+  "type": "module",
+  "dependencies": {
+    "ldap-authentication": "^3.2.4",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}
