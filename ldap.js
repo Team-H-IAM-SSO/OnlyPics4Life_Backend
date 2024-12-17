@@ -5,7 +5,7 @@ import config from './config.json';
 
 // Log normal user
 export async function auth(username, password) {
-    options = {
+    let options = {
       ldapOpts: {
         url: `ldap://${config.LDAP.host}`,
         // tlsOptions: { rejectUnauthorized: false }
@@ -13,12 +13,12 @@ export async function auth(username, password) {
       userDn: `dc=onlypics4,dc=life`,
       userPassword: password,
       userSearchBase: 'dc=onlypics4,dc=life',
-      usernameAttribute: 'uid',
+      usernameAttribute: 'cn',
       username: username,
       // starttls: false
     };
   
-    user = await authenticate(options);
+    let user = await authenticate(options);
     console.log(user);
 }
 

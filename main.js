@@ -25,7 +25,7 @@ function getContentType(filePath) {
 
 
 // DEBUG
-const DEBUG = false;
+const DEBUG = true;
 
 
 // HTTP server
@@ -38,8 +38,24 @@ const server = Bun.serve({
 
         // Login path
         if(url.pathname.startsWith('/login')) {
-            console.log(`Params : ${url.searchParams}`);
+            if(DEBUG) {console.log(`Params : ${decodeURI(url.search)}`);}
+
+            // Get request params
+            let params = decodeURI(url.search).replace('?', '').split(',');
+            if(!params[0].includes('username=') || !params[1].includes('password=')) {
+                return new Response('Error on login query');
+            }
+
+            // Login values
+            let username = params[0].replace('username=', '');
+            let password = params[1].replace('password=', '');
+            if(DEBUG) {console.log(`User : ${username}, Password: ${password}`);}
             
+
+            // Request LDAP
+            let user = await auth(username, password);
+            
+            // Respond login
             return new Response('Damn boi',{
                 status: 200,
                 headers: {
@@ -49,7 +65,7 @@ const server = Bun.serve({
             });
         }     
 
-
+        // Fallback
         return new Response("Not implemented.");
     },
 });
