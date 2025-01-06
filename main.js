@@ -1,11 +1,12 @@
 // Modules
-import {connect} from "./database.js";
+import Database from "./database.js";
 import {login} from "./ldap.js";
 import config from './config.json';
 
 
 // Init database connection
-await connect();
+let client = new Database();
+await client.connect();
 
 
 // Get files content type
@@ -45,8 +46,8 @@ const server = Bun.serve({
                 console.log('Login :', username);
                 console.log('Password :', password);
             }
-            // Get request params
-            let params = decodeURI(url.search).replace('?', '').split(',');
+
+            // Check values
             if(username === null || password === null) {
                 return new Response('Error on login query', {status: 503});
             }            
@@ -65,7 +66,14 @@ const server = Bun.serve({
                     "Access-Control-Allow-Origin": "*"
                 }
             });
-        }     
+        }
+
+
+        // Get pics
+        if(url.pathname === '/album-pictures') {
+            const albumID = request.headers.get("album-id");
+        }
+
 
         // Fallback
         return new Response("Not implemented.");
