@@ -1,5 +1,6 @@
 {
   "name": "onlypics4life_backend",
+  "description": "Bun server backend for the OnlyPics4Life WebApp",
   "module": "main.js",
   "version": "0.1.0",
   "author": "TeamH",
@@ -10,5 +11,8 @@
   },
   "devDependencies": {
     "@types/bun": "latest"
+  },
+  "engines": {
+    "bun": ">=1.1.42"
   }
 }
