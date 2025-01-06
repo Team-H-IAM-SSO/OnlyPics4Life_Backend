@@ -9,5 +9,8 @@
     "LDAP": {
         "host": ""
     },
+    "PICTURES": {
+        "basePath": "/media/SAMBA/DATA"
+    },
     "appPort": 6969
 }

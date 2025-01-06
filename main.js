@@ -1,12 +1,17 @@
 // Modules
 import Database from "./database.js";
+import {join} from "path";
+import fs from 'fs';
 import {login} from "./ldap.js";
 import config from './config.json';
 
 
 // Init database connection
-let client = new Database();
-await client.connect();
+let database = new Database();
+await database.connect();
+
+// Config
+const allowedFormats = ['.png', '.jpg', '.jpeg', '.raw', '.tif', '.webp', '.gif'];
 
 
 // Get files content type
@@ -62,16 +67,67 @@ const server = Bun.serve({
             return new Response(JSON.stringify(res), {
                 status: 200,
                 headers: {
-                    "Content-Type": "text/plain",
+                    "Content-Type": "application/json",
                     "Access-Control-Allow-Origin": "*"
                 }
             });
         }
 
 
-        // Get pics
+        // Get album pics
         if(url.pathname === '/album-pictures') {
-            const albumID = request.headers.get("album-id");
+            const collectionID = request.headers.get("collection-id");
+
+            let picturesPath = await database.getCollectionPictures(collectionID);
+            let res = {
+                "collectionID": collectionID,
+                "picturesPath": picturesPath
+            };
+
+            return new Response(JSON.stringify(res), {
+                status: 200,
+                headers: {
+                    "Content-Type": "application/json",
+                    "Access-Control-Allow-Origin": "*"
+                }
+            });
+        }
+
+
+        // Get picture
+        if(url.pathname.startsWith('/photos')) {
+            // Get path
+            let photoPath = url.pathname.replace('/photos/', '');
+
+            // Check format
+            let valid = false;
+            for(let i = 0; i < allowedFormats.length; i++) {
+                if(photoPath.endsWith(allowedFormats[i])) {
+                    valid = true;
+                    break;
+                }
+            }
+
+            // Return pic
+            if(valid) {
+                try {                    
+                    let filePath = join(config.PICTURES.basePath, url.pathname.replace('/extes', '/'));
+                    const file = await fs.promises.readFile(filePath);
+                    const contentType = getContentType(filePath);
+
+                    return new Response(file, {
+                        status: 200,
+                        headers: {
+                            "Content-Type": contentType
+                        }
+                    });
+                } catch (error) {
+                    console.error("Error while reading file", error);
+                    return new Response("Error reading file", { status: 403 });
+                }
+            } else {
+                return new Response("Picture path not in a good form", { status: 403 });
+            }
         }
 
 
