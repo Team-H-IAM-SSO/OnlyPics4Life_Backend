@@ -2,9 +2,12 @@
 import {authenticate} from 'ldap-authentication';
 import config from './config.json';
 
+// DEBUG
+const DEBUG = true;
+
 
 // Log normal user
-export function auth(username, password) {
+function auth(username, password) {
   return new Promise((resolve, reject) => {
     let options = {
       ldapOpts: {
@@ -20,11 +23,20 @@ export function auth(username, password) {
       // starttls: false
     };
   
-    authenticate(options).then(user => {
-      console.log(user);
-      resolve(user);
+    authenticate(options).then(resolve).catch(reject);
+  });
+}
+
+export function login(username, password) {
+  return new Promise((resolve, reject) => {
+    auth(username, password).then(user => {
+      if(DEBUG) {console.log(user);}
+
+      resolve(true);
     }).catch(e => {
-      reject(e);    
+      if(DEBUG) {console.error(e);}
+
+      resolve(false);
     });
   });
 }

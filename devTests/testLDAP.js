@@ -1,7 +1,7 @@
 // Modules
-import {auth} from '../ldap.js';
+import {login} from '../ldap.js';
 
 // Auth user
-let user = await auth('Admin', '123456789').catch(console.error);
+let user = await login('Admin', '123456789').catch(console.error);
 
 process.exit();
