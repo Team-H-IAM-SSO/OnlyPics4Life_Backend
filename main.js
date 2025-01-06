@@ -1,6 +1,6 @@
 // Modules
 import {connect} from "./database.js";
-import {auth, authAdmin} from "./ldap.js";
+import {login} from "./ldap.js";
 import config from './config.json';
 
 
@@ -53,10 +53,13 @@ const server = Bun.serve({
             
 
             // Request LDAP
-            let user = await auth(username, password);
+            let valid = await login(username, password);
+            let res = {
+                "login": valid
+            };
             
             // Respond login
-            return new Response('Damn boi',{
+            return new Response(JSON.stringify(res), {
                 status: 200,
                 headers: {
                     "Content-Type": "text/plain",
