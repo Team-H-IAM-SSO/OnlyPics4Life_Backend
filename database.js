@@ -13,8 +13,9 @@ let client = new Client({
 
 // Connect client
 export async function connect() {
-    await client.connect().catch(console.error);
-    console.log(`Database connected on ${config.SQL.host}:${config.SQL.port}`);
+    await client.connect().then(() => {
+        console.log(`Database connected on ${config.SQL.host}:${config.SQL.port}`);
+    }).catch(console.error);
 }
 
 
