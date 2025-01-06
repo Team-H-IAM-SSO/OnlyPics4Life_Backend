@@ -2,6 +2,6 @@
 import {auth} from '../ldap.js';
 
 // Auth user
-await auth('Admin', '123456789');
+let user = await auth('Admin', '123456789').catch(console.error);
 
 process.exit();
