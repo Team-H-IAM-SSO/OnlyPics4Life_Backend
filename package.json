@@ -12,6 +12,11 @@
   "devDependencies": {
     "@types/bun": "latest"
   },
+  "scripts": {
+    "start": "bun main.js",
+    "build": "bun build ./main.js --target=bun --outfile=app.js",
+    "serve": "bun app.js"
+  },
   "engines": {
     "bun": ">=1.1.42"
   }
