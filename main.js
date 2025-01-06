@@ -74,7 +74,7 @@ const server = Bun.serve({
         }
 
 
-        // Get album pics
+        // Get album pics infos
         if(url.pathname === '/album-pictures') {
             const collectionID = request.headers.get("collection-id");
 
@@ -94,7 +94,7 @@ const server = Bun.serve({
         }
 
 
-        // Get picture
+        // Get pictures
         if(url.pathname.startsWith('/photos')) {
             // Get path
             let photoPath = url.pathname.replace('/photos/', '');

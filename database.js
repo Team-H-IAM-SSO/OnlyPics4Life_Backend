@@ -56,7 +56,7 @@ export default class Database {
                 LEFT JOIN collection_photos cp ON cp.collection_id=pc.id
                 LEFT JOIN photos ph ON cp.photo_id=ph.id
                 WHERE pc.id=$1::int
-                ORDER BY ph.filePath ASC, ph.uploaded_at ASC;
+                ORDER BY ph.file_path ASC, ph.uploaded_at ASC;
             `,
             [collectionID],
             (err, res) => {
