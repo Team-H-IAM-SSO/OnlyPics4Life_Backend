@@ -6,7 +6,7 @@ import config from './config.json';
 const DEBUG = true;
 
 
-// Log normal user
+// Get user infos by logging
 function auth(username, password) {
   return new Promise((resolve, reject) => {
     let options = {
@@ -19,7 +19,7 @@ function auth(username, password) {
       userSearchBase: 'dc=onlypics4,dc=life',
       usernameAttribute: 'cn',
       username: username,
-      attributes: ['dn', 'sn', 'cn', 'mail'],
+      attributes: ['*'],
       // starttls: false
     };
   
@@ -27,6 +27,8 @@ function auth(username, password) {
   });
 }
 
+
+// Login user
 export function login(username, password) {
   return new Promise((resolve, reject) => {
     auth(username, password).then(user => {
