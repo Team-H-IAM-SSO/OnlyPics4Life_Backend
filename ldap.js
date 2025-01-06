@@ -10,11 +10,12 @@ export async function auth(username, password) {
       url: `ldap://${config.LDAP.host}`,
       // tlsOptions: { rejectUnauthorized: false }
     },
-    userDn: `dc=onlypics4,dc=life`,
+    userDn: `cn=${username},ou=people,dc=onlypics4,dc=life`,
     userPassword: password,
     userSearchBase: 'dc=onlypics4,dc=life',
     usernameAttribute: 'cn',
     username: username,
+    attributes: ['dn', 'sn', 'cn'],
     // starttls: false
   };
 
