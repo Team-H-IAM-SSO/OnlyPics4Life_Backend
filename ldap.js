@@ -34,11 +34,11 @@ export function login(username, password) {
     auth(username, password).then(user => {
       if(DEBUG) {console.log(user);}
 
-      resolve(true);
+      resolve([true, user.uid]);
     }).catch(e => {
       if(DEBUG) {console.error(e);}
 
-      resolve(false);
+      resolve([false, null]);
     });
   });
 }

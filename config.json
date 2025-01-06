@@ -7,7 +7,8 @@
         "password": ""
     },
     "LDAP": {
-        "host": ""
+        "host": "",
+        "login_expiration_s": 72000
     },
     "PICTURES": {
         "basePath": "/media/SAMBA/DATA"

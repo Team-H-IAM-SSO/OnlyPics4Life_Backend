@@ -1,7 +1,8 @@
 // Modules
-import Database from "./database.js";
 import {join} from "path";
 import fs from 'fs';
+import {randomUUIDv7} from "bun";
+import Database from "./database.js";
 import {login} from "./ldap.js";
 import config from './config.json';
 
@@ -54,13 +55,21 @@ const server = Bun.serve({
 
             // Check values
             if(username === null || password === null) {
-                return new Response('Error on login query', {status: 503});
-            }            
+                return new Response('Error on login query', {status: 403});
+            }
 
             // Request LDAP
-            let valid = await login(username, password);
+            let [valid, userID] = await login(username, password);
+            let UUID = '';
+            if(valid) {
+                UUID = randomUUIDv7('hex');
+                await database.storeUUID(UUID, userID);
+            }
+
+            // Response obj
             let res = {
-                "login": valid
+                "login": valid,
+                "session-token": UUID
             };
             
             // Respond login
@@ -68,6 +77,7 @@ const server = Bun.serve({
                 status: 200,
                 headers: {
                     "Content-Type": "application/json",
+                    "Set-Cookie": `session-token=${UUID}`,
                     "Access-Control-Allow-Origin": "*"
                 }
             });
@@ -76,57 +86,85 @@ const server = Bun.serve({
 
         // Get album pics infos
         if(url.pathname === '/album-pictures') {
-            const collectionID = request.headers.get("collection-id");
+            let validToken = await validateToken(request.headers.get("Cookie"));
 
-            let picturesPath = await database.getCollectionPictures(collectionID);
-            let res = {
-                "collectionID": collectionID,
-                "picturesPath": picturesPath
-            };
+            if(validToken) {
+                const collectionID = request.headers.get("collection-id");
 
-            return new Response(JSON.stringify(res), {
-                status: 200,
-                headers: {
-                    "Content-Type": "application/json",
-                    "Access-Control-Allow-Origin": "*"
-                }
-            });
+                let picturesPath = await database.getCollectionPictures(collectionID);
+                let res = {
+                    "collectionID": collectionID,
+                    "picturesPath": picturesPath
+                };
+    
+                return new Response(JSON.stringify(res), {
+                    status: 200,
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Access-Control-Allow-Origin": "*"
+                    }
+                });
+            } else {
+                return new Response(JSON.stringify({
+                    "error": "token-expired"
+                }), {
+                    status: 401,
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Access-Control-Allow-Origin": "*"
+                    }
+                });
+            }
         }
 
 
         // Get pictures
         if(url.pathname.startsWith('/photos')) {
-            // Get path
-            let photoPath = url.pathname.replace('/photos/', '');
+            let validToken = await validateToken(request.headers.get("Cookie"));
+            
+            if(validToken) {
+                // Get path
+                let photoPath = url.pathname.replace('/photos/', '');
 
-            // Check format
-            let valid = false;
-            for(let i = 0; i < allowedFormats.length; i++) {
-                if(photoPath.endsWith(allowedFormats[i])) {
-                    valid = true;
-                    break;
+                // Check format
+                let valid = false;
+                for(let i = 0; i < allowedFormats.length; i++) {
+                    if(photoPath.endsWith(allowedFormats[i])) {
+                        valid = true;
+                        break;
+                    }
                 }
-            }
 
-            // Return pic
-            if(valid) {
-                try {                    
-                    let filePath = join(config.PICTURES.basePath, url.pathname.replace('/extes', '/'));
-                    const file = await fs.promises.readFile(filePath);
-                    const contentType = getContentType(filePath);
+                // Return pic
+                if(valid) {
+                    try {                    
+                        let filePath = join(config.PICTURES.basePath, url.pathname.replace('/extes', '/'));
+                        const file = await fs.promises.readFile(filePath);
+                        const contentType = getContentType(filePath);
 
-                    return new Response(file, {
-                        status: 200,
-                        headers: {
-                            "Content-Type": contentType
-                        }
-                    });
-                } catch (error) {
-                    console.error("Error while reading file", error);
-                    return new Response("Error reading file", { status: 403 });
+                        return new Response(file, {
+                            status: 200,
+                            headers: {
+                                "Content-Type": contentType
+                            }
+                        });
+                    } catch (error) {
+                        console.error("Error while reading file", error);
+                        return new Response("Error reading file", { status: 403 });
+                    }
+                } else {
+                    return new Response("Picture path not in a good form", { status: 403 });
                 }
             } else {
-                return new Response("Picture path not in a good form", { status: 403 });
+                return new Response(JSON.stringify({
+                    "error": "token-expired"
+                }), {
+                    status: 401,
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Access-Control-Allow-Origin": "*"
+                    }
+                });
             }
         }
 
@@ -135,5 +173,16 @@ const server = Bun.serve({
         return new Response("Not implemented.");
     },
 });
-  
 console.log(`Server started on port ${server.port} !`);
+
+
+// LOGIN
+function validateToken(cookies) {
+    let token = cookies.replace('session-token=', '');
+
+    if(token.includes(',')) {
+        token = token.slice(0, token.indexOf(','));
+    }
+
+    return database.testUUID(token);
+}

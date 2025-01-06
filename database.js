@@ -98,4 +98,66 @@ export default class Database {
             });
         });
     }
+
+
+    // ---- LOGIN FUNCTIONS ----
+    storeUUID(UUID, userID) {
+        return new Promise((resolve, reject) => {
+            this.client.query(`INSERT INTO user_connections(token, user_id, creation) VALUES ($1::text, $2::int, NOW());`,
+            [UUID, userID],
+            err => {
+                if(err) {
+                    console.error(err);
+                    reject(err);
+                }
+                
+                resolve();
+            });
+        });
+    }
+
+    testUUID(UUID) {
+        return new Promise((resolve, reject) => {
+            if(UUID.trim() === "" || UUID === null) {resolve(false);}
+            
+            this.client.query(`SELECT * FROM user_connections WHERE token=$1::text;`,
+            [UUID],
+            async (err, res) => {
+                if(err) {
+                    console.error(err);
+                    reject(err);
+                }
+                
+                if(res.rowCount > 0) {
+                    let dt = res.rows[0].creation;
+
+                    // Token expired
+                    if((new Date()).getTime() - dt.getTime() > config.LDAP.login_expiration_s * 1000) {
+                        await deleteUUID(res.rows[0].user_id);
+
+                        resolve(false);
+                    } else {
+                        resolve(true);
+                    }
+                } else {
+                    resolve(false);
+                }
+            });
+        });
+    }
+
+    deleteUUID(userID) {
+        return new Promise((resolve, reject) => {
+            this.client.query(`DELETE FROM user_connections WHERE user_id=$1::int;`,
+            [userID],
+            err => {
+                if(err) {
+                    console.error(err);
+                    reject(err);
+                }
+                
+                resolve();
+            });
+        });
+    }
 }
