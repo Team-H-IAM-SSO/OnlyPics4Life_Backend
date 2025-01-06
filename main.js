@@ -37,20 +37,19 @@ const server = Bun.serve({
         const url = new URL(request.url);
 
         // Login path
-        if(url.pathname.startsWith('/login')) {
-            if(DEBUG) {console.log(`Params : ${decodeURI(url.search)}`);}
+        if(url.pathname === '/login') {
+            const username = request.headers.get("username");
+            const password = request.headers.get("password");
 
+            if(DEBUG) {
+                console.log('Login :', username);
+                console.log('Password :', password);
+            }
             // Get request params
             let params = decodeURI(url.search).replace('?', '').split(',');
-            if(!params[0].includes('username=') || !params[1].includes('password=')) {
-                return new Response('Error on login query');
-            }
-
-            // Login values
-            let username = params[0].replace('username=', '');
-            let password = params[1].replace('password=', '');
-            if(DEBUG) {console.log(`User : ${username}, Password: ${password}`);}
-            
+            if(username === null || password === null) {
+                return new Response('Error on login query', {status: 503});
+            }            
 
             // Request LDAP
             let valid = await login(username, password);
