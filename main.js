@@ -64,7 +64,7 @@ const server = Bun.serve({
             let UUID = '';
             if(valid) {
                 UUID = randomUUIDv7('hex');
-                await database.storeUUID(UUID, userID);
+                await database.storeUUID(UUID, Number(userID));
             }
 
             // Response obj

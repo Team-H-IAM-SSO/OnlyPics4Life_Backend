@@ -34,7 +34,7 @@ export function login(username, password) {
     auth(username, password).then(user => {
       if(DEBUG) {console.log(user);}
 
-      resolve([true, user.uid]);
+      resolve([true, user.uidNumber]);
     }).catch(e => {
       if(DEBUG) {console.error(e);}
 
