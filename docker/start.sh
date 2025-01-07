@@ -1,0 +1,1 @@
+docker run -d -p 42069:6969 onlypics4life

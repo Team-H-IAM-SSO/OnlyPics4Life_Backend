@@ -13,6 +13,7 @@ await database.connect();
 
 // Config
 const allowedFormats = ['.png', '.jpg', '.jpeg', '.raw', '.tif', '.webp', '.gif'];
+const buildPath = join(import.meta.dir, "dist");
 
 
 // Get files content type
@@ -44,7 +45,7 @@ const server = Bun.serve({
         const url = new URL(request.url);
 
         // Login path
-        if(url.pathname === '/login') {
+        if(url.pathname === '/login-user') {
             const username = request.headers.get("username");
             const password = request.headers.get("password");
 
@@ -169,8 +170,24 @@ const server = Bun.serve({
         }
 
 
-        // Fallback
-        return new Response("Not implemented.");
+        // Frontend
+        let filePath = url.pathname === "/" ? "/index.html" : url.pathname;
+        filePath = join(buildPath, filePath);
+
+        try {
+            const file = await fs.promises.readFile(filePath);
+            const contentType = getContentType(filePath);
+
+            return new Response(file, {
+                status: 200,
+                headers: {
+                    "Content-Type": contentType
+                }
+            });
+        } catch (error) {
+            console.error("Error opening file:", error);
+            return new Response("Not Found", { status: 404 });
+        }
     },
 });
 console.log(`Server started on port ${server.port} !`);
