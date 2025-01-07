@@ -171,7 +171,7 @@ const server = Bun.serve({
 
 
         // Frontend
-        let filePath = url.pathname === "/" ? "/index.html" : url.pathname;
+        let filePath = url.pathname === "/" ? "/index.html" : url.pathname.replace('/login', 'index.html');
         filePath = join(buildPath, filePath);
 
         try {
