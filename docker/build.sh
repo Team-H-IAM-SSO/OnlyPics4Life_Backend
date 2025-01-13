@@ -1,2 +1,1 @@
-docker image rm onlypics4life:latest
-docker build --pull -t onlypics4life .
+docker build -t ricks95/onlypics4life_frontend:latest .
